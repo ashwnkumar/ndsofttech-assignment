@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import axiosInstance from "../utils/axiosInstance";
 import { apiConfig } from "../configs/apiConfig";
 import { useGlobal } from "../contexts/GlobalContext";
+import { signInWithGoogle } from "../configs/firebaseConfig";
 
 const socialButtons = [
   { icon: "/icons/google.png", label: "Google" },
@@ -54,6 +55,30 @@ const Login = () => {
       toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const res = await signInWithGoogle();
+      const firebaseToken = await res.user.getIdToken(); // this goes to backend
+
+      console.log("Firebase token:", firebaseToken);
+
+      const response = await axiosInstance.post(apiConfig.user.google, {
+        token: firebaseToken,
+      });
+
+      const { token, user } = response.data.data; 
+
+      localStorage.setItem("token", token);
+      setUser(user);
+
+      toast.success(response.data.message || "Logged in successfully");
+      navigate("/");
+    } catch (error) {
+      console.log("Error logging in with Google:", error);
+      
     }
   };
 
@@ -111,7 +136,11 @@ const Login = () => {
           </div>
         </div>
         <div className="flex flex-col items-center justify-center w-full gap-4 text-center">
-          <Button variant="outline" className="w-full">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleLogin}
+          >
             <span className="flex items-center text-secondary gap-4 text-lg">
               <img src={"/icons/google.png"} alt="Google" />
               <span>Continue with Google</span>

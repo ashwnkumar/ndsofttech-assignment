@@ -6,17 +6,25 @@ const connectDb = require("./src/configs/db");
 const productRouter = require("./src/routes/productRouter");
 const authRouter = require("./src/routes/authRouter");
 const userRouter = require("./src/routes/userRouter");
+const admin = require("firebase-admin");
+const serviceAccount = require("./src/configs/serviceAccount.json");
+const { generalLimiter } = require("./src/middlewares/rateLimiter");
 
 const app = express();
 connectDb();
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 app.use(
   cors({
-    origin: "http://192.168.1.33:5173",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
 app.use(express.json());
+app.use(generalLimiter);
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);

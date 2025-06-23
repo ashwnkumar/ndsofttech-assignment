@@ -3,6 +3,7 @@ const sendResponse = require("../utils/sendresponse");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+const admin = require("firebase-admin");
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id, email: user.email }, envConfig.jwtSecret, {
@@ -72,7 +73,37 @@ const login = async (req, res) => {
   }
 };
 
+const googleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) return sendResponse(res, 400, "Token Missing");
+
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    const { uid, email, name } = decoded;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({ email, googleId: uid, name });
+    }
+
+    const jwtToken = generateToken(user);
+   
+
+    return sendResponse(res, 200, "Login Successful", {
+      token: jwtToken,
+      user,
+    });
+  } catch (error) {
+    console.log("Error logging in user using google:", error);
+    return sendResponse(res, 500, "Error logging in user");
+  }
+};
+
 module.exports = {
   register,
   login,
+  googleLogin,
 };

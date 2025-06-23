@@ -2,7 +2,8 @@ export const apiConfig = {
   user: {
     login: "/auth/login",
     register: "/auth/register",
-    get: "/user"
+    google: "/auth/google",
+    get: "/user",
   },
   product: {
     add: "/product/add",

@@ -14,7 +14,9 @@ const authMiddleware = async (req, res, next) => {
     );
   }
 
-  const token = authHeader.split(" ")[1];
+ const token = authHeader.split(" ")[1];
+
+
 
   try {
     const decoded = jwt.verify(token, envConfig.jwtSecret);
@@ -24,7 +26,7 @@ const authMiddleware = async (req, res, next) => {
       return sendResponse(res, 401, "User not found. Please login again.");
     }
 
-    req.user = user; // Attach user to request object
+    req.user = user; 
     next();
   } catch (error) {
     console.error("Error authenticating user:", error.message);

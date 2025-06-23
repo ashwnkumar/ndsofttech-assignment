@@ -9,6 +9,7 @@ const ProductContext = createContext();
 export const ProductProvider = ({ children }) => {
   const { setLoading } = useGlobal();
   const [products, setProducts] = useState([]);
+  const token = localStorage.getItem("token");
 
   const getProducts = async () => {
     try {
@@ -86,7 +87,7 @@ export const ProductProvider = ({ children }) => {
 
   useEffect(() => {
     getProducts();
-  }, []);
+  }, [token]);
   return (
     <ProductContext.Provider
       value={{

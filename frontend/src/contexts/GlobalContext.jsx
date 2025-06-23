@@ -7,14 +7,11 @@ const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState([]);
   const [user, setUser] = useState({});
 
-  console.log("products from context", products);
-
+  const token = localStorage.getItem("token");
   useEffect(() => {
     const getUserDetails = async () => {
-      
       try {
         const res = await axiosInstance.get(apiConfig.user.get);
         const { user } = res.data.data;
@@ -25,25 +22,13 @@ export const GlobalProvider = ({ children }) => {
       }
     };
 
-    getUserDetails();
-  }, []);
-
-  const addProduct = async ( ) => {
-    try {
-      const res = await axiosInstance.post(apiConfig.product.add, formData);
-      console.log("res from add product", res);
-      toast.success(res.data.message || "Product added successfully");
-      handleClose();
-    } catch (error) {
-      console.log("Error adding product:", error);
-      toast.error(error.message || "Something went wrong");
+    if (token) {
+      getUserDetails();
     }
-  }
+  }, [token]);
 
   return (
-    <GlobalContext.Provider
-      value={{ products, user, setUser, loading, setLoading, setProducts,  }}
-    >
+    <GlobalContext.Provider value={{ user, setUser, loading, setLoading }}>
       {children}
     </GlobalContext.Provider>
   );

@@ -1,5 +1,6 @@
 const sendResponse = require("../utils/sendresponse");
 const Product = require("../models/productModel");
+const mongoose = require("mongoose");
 
 const addProduct = async (req, res) => {
   try {
@@ -61,6 +62,11 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Validate ObjectId
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return sendResponse(res, 400, "Invalid product ID");
+    }
+
     const product = await Product.findById(id);
 
     if (!product) {
@@ -79,6 +85,12 @@ const getProductById = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Validate ObjectId
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return sendResponse(res, 400, "Invalid product ID");
+    }
+
     const product = await Product.findById(id);
 
     if (!product) {
