@@ -9,12 +9,12 @@ import Loader from "./components/Loader";
 
 createRoot(document.getElementById("root")).render(
   <>
-    <StrictMode>
+    {/* <StrictMode> */}
       <GlobalProvider>
         <RouterProvider router={router} />
         <Toaster toastOptions={{ style: { zIndex: 9999 } }} />
         <Loader/>
       </GlobalProvider>
-    </StrictMode>
+    {/* </StrictMode> */}
   </>
 );

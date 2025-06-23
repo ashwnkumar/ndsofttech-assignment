@@ -5,9 +5,10 @@ import Button from "./form/Button";
 import { createPortal } from "react-dom";
 import { useGlobal } from "../contexts/GlobalContext";
 import toast from "react-hot-toast";
+import PlaceholderImage from "./PlaceholderImage";
 
 const Navbar = () => {
-  const { setUser } = useGlobal();
+  const { user, setUser } = useGlobal();
   const navigate = useNavigate();
   const [openProfile, setOpenProfile] = useState(false);
   const menuRef = useRef(null);
@@ -50,9 +51,15 @@ const Navbar = () => {
           createPortal(
             <div
               ref={menuRef}
-              className="fixed top-16 right-4 z-50 bg-white border border-gray rounded-lg shadow-md p-4 w-48"
+              className="fixed top-16 right-4 z-50 bg-white border border-gray rounded-lg shadow-md p-4 space-y-3 cursor-default"
             >
-              <h2 className="text-lg font-semibold mb-2">Profile</h2>
+              <div className="flex items-center gap-2">
+                <PlaceholderImage name={user?.name} />
+                <div className="flex flex-col items-start justify-center">
+                  <p className="font-medium text-lg">{user?.name}</p>
+                  <p>{user?.email}</p>
+                </div>
+              </div>
               <Button
                 label="Logout"
                 variant="danger"
