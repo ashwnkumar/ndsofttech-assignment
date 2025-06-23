@@ -28,9 +28,21 @@ export const GlobalProvider = ({ children }) => {
     getUserDetails();
   }, []);
 
+  const addProduct = async ( ) => {
+    try {
+      const res = await axiosInstance.post(apiConfig.product.add, formData);
+      console.log("res from add product", res);
+      toast.success(res.data.message || "Product added successfully");
+      handleClose();
+    } catch (error) {
+      console.log("Error adding product:", error);
+      toast.error(error.message || "Something went wrong");
+    }
+  }
+
   return (
     <GlobalContext.Provider
-      value={{ products, user, setUser, loading, setLoading, setProducts }}
+      value={{ products, user, setUser, loading, setLoading, setProducts,  }}
     >
       {children}
     </GlobalContext.Provider>

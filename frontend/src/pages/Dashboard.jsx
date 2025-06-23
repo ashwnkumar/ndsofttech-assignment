@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import PageHeader from "../components/PageHeader";
 import { ArchiveX, Plus } from "lucide-react";
 import ModalComponent from "../components/ModalComponent";
@@ -6,9 +6,8 @@ import DynamicForm from "../components/form/DynamicForm";
 import toast from "react-hot-toast";
 import { useGlobal } from "../contexts/GlobalContext";
 import Button from "../components/form/Button";
-import axiosInstance from "../utils/axiosInstance";
-import { apiConfig } from "../configs/apiConfig";
 import ProductCard from "../components/ProductCard";
+import { useProducts } from "../contexts/ProductContext";
 
 const categoryOptions = [
   { value: "shirt", option: "Shirt" },
@@ -18,7 +17,20 @@ const categoryOptions = [
 ];
 
 const Dashboard = () => {
-  const { products, setProducts } = useGlobal();
+  const { setLoading } = useGlobal();
+  const {
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    getProductDetails,
+  } = useProducts();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     price: 0,
@@ -26,50 +38,18 @@ const Dashboard = () => {
     category: "",
   });
   const [errors, setErrors] = useState({});
-  const [modalOpen, setModalOpen] = useState(false);
 
   const validateForm = () => {
-    let err = {};
-
-    if (!formData.name) err.name = "Name is Required";
-    if (!formData.price) err.price = "Price is Required";
-    if (!formData.quantity) err.quantity = "Quantity is Required";
-    if (!formData.category) err.category = "Category is Required";
-
+    const err = {};
+    if (!formData.name) err.name = "Name is required";
+    if (!formData.price) err.price = "Price is required";
+    if (!formData.quantity) err.quantity = "Quantity is required";
+    if (!formData.category) err.category = "Category is required";
     setErrors(err);
     return Object.keys(err).length === 0;
   };
 
-  const handleAddProduct = async () => {
-    if (!validateForm()) {
-      return toast.error("Please fill all the required fields");
-    }
-
-    try {
-      const res = await axiosInstance.post(apiConfig.product.add, formData);
-      console.log("res from add product", res);
-      toast.success(res.data.message || "Product added successfully");
-      handleClose();
-    } catch (error) {
-      console.log("Error adding product:", error);
-      toast.error(error.message || "Something went wrong");
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    setErrors({
-      ...errors,
-      [name]: "",
-    });
-  };
-
-  const handleClose = () => {
+  const resetForm = () => {
     setFormData({
       name: "",
       price: 0,
@@ -77,38 +57,62 @@ const Dashboard = () => {
       category: "",
     });
     setErrors({});
-    setModalOpen(false);
+    setIsEditing(false);
+    setEditingId(null);
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    setModalOpen(true);
+  };
+
+  const openEditModal = async (id) => {
+    setIsEditing(true);
+    setEditingId(id);
+    const data = await getProductDetails(id);
+    if (data) {
+      setFormData({
+        name: data.name,
+        price: data.price,
+        quantity: data.quantity,
+        category: data.category,
+      });
+      setModalOpen(true);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleDropdownChange = (item) => {
-    setFormData({
-      ...formData,
-      category: item.value,
-    });
+    setFormData((prev) => ({ ...prev, category: item.value }));
   };
 
-  const handleEdit = (id) => {
-    console.log("edit triggered for ", id);
-  };
-  
-  const handleDelete = (id) => {
-    console.log("delete triggered for ", id);
+  const handleSubmit = async () => {
+    if (!validateForm())
+      return toast.error("Please fill all the required fields");
+
+    if (isEditing) {
+      await updateProduct(editingId, formData).then(() => setModalOpen(false));
+    } else {
+      await addProduct(formData);
+    }
+
+    handleClose();
   };
 
-  useEffect(() => {
-    const getProducts = async () => {
-      try {
-        const res = await axiosInstance.get(apiConfig.product.get);
-        console.log("res from get product", res);
-        const { products } = res.data.data;
-        setProducts(products);
-      } catch (error) {
-        console.log("Error fetching products:", error);
-      }
-    };
+  const handleClose = () => {
+    resetForm();
+    setModalOpen(false);
+  };
 
-    getProducts();
-  }, []);
+  const handleDelete = async (id) => {
+    await deleteProduct(id);
+    setDeleteModal(null);
+  };
 
   const formOptions = [
     {
@@ -131,7 +135,7 @@ const Dashboard = () => {
           options: categoryOptions,
           required: true,
           value: formData.category,
-          onChange: (item) => handleDropdownChange(item),
+          onChange: handleDropdownChange,
           error: errors.category,
         },
         {
@@ -159,50 +163,58 @@ const Dashboard = () => {
   ];
 
   const modalButtons = [
+    { label: "Cancel", variant: "outline", onClick: handleClose },
     {
-      label: "Cancel",
-      variant: "outline",
-      onClick: handleClose,
-    },
-    {
-      label: "Add Product",
-      onClick: () => handleAddProduct(),
+      label: isEditing ? "Update Product Details" : "Add Product",
+      onClick: handleSubmit,
     },
   ];
 
-  const headerButtons = [
-    {
-      label: "Add Product",
-      icon: Plus,
-      onClick: () => setModalOpen(true),
-    },
-  ];
   return (
     <div className="w-full space-y-2">
       <ModalComponent
-        title="Add Product"
+        isOpen={deleteModal}
+        setIsOpen={setDeleteModal}
+        title="Delete Product"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        buttons={[
+          {
+            label: "Cancel",
+            variant: "outline",
+            onClick: () => setDeleteModal(null),
+          },
+          {
+            label: "Delete",
+            variant: "danger",
+            onClick: () => handleDelete(deleteModal),
+          },
+        ]}
+      />
+
+      <ModalComponent
+        title={isEditing ? "Edit Product" : "Add Product"}
         isOpen={modalOpen}
         setIsOpen={setModalOpen}
         buttons={modalButtons}
         onClose={handleClose}
       >
-        <div className="">
-          <DynamicForm options={formOptions} />
-        </div>
+        <DynamicForm options={formOptions} />
       </ModalComponent>
+
       <PageHeader
         title="Inventory"
-        desc={"Welcome to your Inventory"}
-        buttons={headerButtons}
+        desc="Welcome to your Inventory"
+        buttons={[{ label: "Add Product", icon: Plus, onClick: openAddModal }]}
       />
+
       {products?.length > 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 ">
-          {products?.map((product) => (
+        <div className="flex flex-col items-center justify-center gap-2">
+          {products.map((product) => (
             <ProductCard
               key={product._id}
               product={product}
-              handleDelete={handleDelete}
-              handleEdit={handleEdit}
+              handleDelete={() => setDeleteModal(product._id)}
+              handleEdit={() => openEditModal(product._id)}
             />
           ))}
         </div>
@@ -211,15 +223,13 @@ const Dashboard = () => {
           <div className="bg-brand-faded rounded-full p-4 text-brand">
             <ArchiveX size={50} strokeWidth={1.5} />
           </div>
-          <div>
-            <h1 className="text-2xl font-medium text-primary">
-              No products found
-            </h1>
-            <p className="text-secondary text-lg">
-              You haven't added any products to the inventory yet
-            </p>
-          </div>
-          <Button label="Add Product" onClick={() => setModalOpen(true)} />
+          <h1 className="text-2xl font-medium text-primary">
+            No products found
+          </h1>
+          <p className="text-secondary text-lg">
+            You haven't added any products to the inventory yet
+          </p>
+          <Button label="Add Product" onClick={openAddModal} />
         </div>
       )}
     </div>
