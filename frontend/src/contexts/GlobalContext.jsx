@@ -10,6 +10,8 @@ export const GlobalProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [user, setUser] = useState({});
 
+  console.log("products from context", products);
+
   useEffect(() => {
     const getUserDetails = async () => {
       

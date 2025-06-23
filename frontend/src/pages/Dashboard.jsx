@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import { ArchiveX, Plus } from "lucide-react";
 import ModalComponent from "../components/ModalComponent";
@@ -6,7 +6,9 @@ import DynamicForm from "../components/form/DynamicForm";
 import toast from "react-hot-toast";
 import { useGlobal } from "../contexts/GlobalContext";
 import Button from "../components/form/Button";
-
+import axiosInstance from "../utils/axiosInstance";
+import { apiConfig } from "../configs/apiConfig";
+import ProductCard from "../components/ProductCard";
 
 const categoryOptions = [
   { value: "shirt", option: "Shirt" },
@@ -16,7 +18,7 @@ const categoryOptions = [
 ];
 
 const Dashboard = () => {
-  const { products } = useGlobal();
+  const { products, setProducts } = useGlobal();
   const [formData, setFormData] = useState({
     name: "",
     price: 0,
@@ -38,9 +40,19 @@ const Dashboard = () => {
     return Object.keys(err).length === 0;
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!validateForm()) {
       return toast.error("Please fill all the required fields");
+    }
+
+    try {
+      const res = await axiosInstance.post(apiConfig.product.add, formData);
+      console.log("res from add product", res);
+      toast.success(res.data.message || "Product added successfully");
+      handleClose();
+    } catch (error) {
+      console.log("Error adding product:", error);
+      toast.error(error.message || "Something went wrong");
     }
   };
 
@@ -74,6 +86,29 @@ const Dashboard = () => {
       category: item.value,
     });
   };
+
+  const handleEdit = (id) => {
+    console.log("edit triggered for ", id);
+  };
+  
+  const handleDelete = (id) => {
+    console.log("delete triggered for ", id);
+  };
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const res = await axiosInstance.get(apiConfig.product.get);
+        console.log("res from get product", res);
+        const { products } = res.data.data;
+        setProducts(products);
+      } catch (error) {
+        console.log("Error fetching products:", error);
+      }
+    };
+
+    getProducts();
+  }, []);
 
   const formOptions = [
     {
@@ -143,7 +178,7 @@ const Dashboard = () => {
     },
   ];
   return (
-    <div className="w-full">
+    <div className="w-full space-y-2">
       <ModalComponent
         title="Add Product"
         isOpen={modalOpen}
@@ -161,15 +196,28 @@ const Dashboard = () => {
         buttons={headerButtons}
       />
       {products?.length > 0 ? (
-        <p>test</p>
+        <div className="flex flex-col items-center justify-center gap-2 ">
+          {products?.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              handleDelete={handleDelete}
+              handleEdit={handleEdit}
+            />
+          ))}
+        </div>
       ) : (
         <div className="h-[70vh] flex flex-col items-center justify-center gap-3 text-center">
-            <div className="bg-brand-faded rounded-full p-4 text-brand" >
-              <ArchiveX size={50} strokeWidth={1.5} />
-            </div>
-          <div >
-          <h1 className="text-2xl font-medium text-primary">No products found</h1>
-          <p className="text-secondary text-lg">You haven't added any products to the inventory yet</p>
+          <div className="bg-brand-faded rounded-full p-4 text-brand">
+            <ArchiveX size={50} strokeWidth={1.5} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-medium text-primary">
+              No products found
+            </h1>
+            <p className="text-secondary text-lg">
+              You haven't added any products to the inventory yet
+            </p>
           </div>
           <Button label="Add Product" onClick={() => setModalOpen(true)} />
         </div>

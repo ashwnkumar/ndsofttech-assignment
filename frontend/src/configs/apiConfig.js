@@ -5,9 +5,9 @@ export const apiConfig = {
     get: "/user"
   },
   product: {
-    add: "/add-product",
-    get: "/get-products",
-    delete: (id) => `/delete/${id}`,
-    edit: (id) => `/edit/${id}`,
+    add: "/product/add-product",
+    get: "/product/get-products",
+    delete: (id) => `/product/delete/${id}`,
+    edit: (id) => `/product/edit/${id}`,
   },
 };
