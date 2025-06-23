@@ -1,16 +1,26 @@
 import { Moon, UserCircle } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Button from "./form/Button";
 import { createPortal } from "react-dom";
+import { useGlobal } from "../contexts/GlobalContext";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
+  const { setUser } = useGlobal();
+  const navigate = useNavigate();
   const [openProfile, setOpenProfile] = useState(false);
   const menuRef = useRef(null);
 
+  const handleLogout = () => {
+    setUser({});
+    localStorage.removeItem("token");
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
+
   useEffect(() => {
     function handleClickOutside(event) {
-      // If click is outside the menu container, close the menu
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setOpenProfile(false);
       }
@@ -22,7 +32,6 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     }
 
-    // Cleanup
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -48,6 +57,7 @@ const Navbar = () => {
                 label="Logout"
                 variant="danger"
                 className="text-danger w-full"
+                onClick={handleLogout}
               />
             </div>,
             document.getElementById("root")

@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
-import ModalComponent from "./ModalComponent";
-import Sidebar from "./Sidebar";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 
 const Layout = () => {
   const { pathname } = useLocation();

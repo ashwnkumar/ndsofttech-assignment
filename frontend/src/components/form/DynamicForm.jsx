@@ -28,6 +28,7 @@ const DynamicForm = ({
             onKeyDown={item.onKeyDown}
             disabled={item.disabled}
             helper={item.helper}
+            error={item.error}
           />
         );
       case "file":
@@ -40,6 +41,8 @@ const DynamicForm = ({
             required={item.required}
             onFileSelect={item.onChange}
             existingImage={item.existingImage}
+            helper={item.helper}
+            error={item.error}
           />
         );
       case "textarea":
@@ -52,6 +55,8 @@ const DynamicForm = ({
             placeholder={item.placeholder || item.label}
             value={item.value}
             onChange={item.onChange}
+            helper={item.helper}
+            error={item.error}
           />
         );
       case "dropdown":
@@ -66,9 +71,10 @@ const DynamicForm = ({
             onChange={item.onChange}
             required={item.required}
             helper={item.helper}
+            error={item.error}
           />
         );
-     
+
       default:
         return null;
     }
