@@ -7,14 +7,14 @@ const productRouter = require("./src/routes/productRouter");
 const authRouter = require("./src/routes/authRouter");
 const userRouter = require("./src/routes/userRouter");
 const admin = require("firebase-admin");
-const serviceAccount = require("./src/configs/serviceAccount.json");
 const { generalLimiter } = require("./src/middlewares/rateLimiter");
+const serviceAccountConfig = require("./src/configs/serviceConfig");
 
 const app = express();
 connectDb();
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccountConfig),
 });
 
 app.use(
@@ -24,7 +24,7 @@ app.use(
   })
 );
 app.use(express.json());
-// app.use(generalLimiter);
+app.use(generalLimiter);
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
