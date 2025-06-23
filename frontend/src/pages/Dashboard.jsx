@@ -6,8 +6,9 @@ import DynamicForm from "../components/form/DynamicForm";
 import toast from "react-hot-toast";
 import { useGlobal } from "../contexts/GlobalContext";
 import Button from "../components/form/Button";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../components/ProductsTable";
 import { useProducts } from "../contexts/ProductContext";
+import ProductsTable from "../components/ProductsTable";
 
 const categoryOptions = [
   { value: "shirt", option: "Shirt" },
@@ -15,6 +16,14 @@ const categoryOptions = [
   { value: "shoes", option: "Shoes" },
   { value: "other", option: "Other" },
 ];
+
+const columns = [
+  { header: "Name", key: "name" },
+  { header: "Price", key: "price" },
+  { header: "Quantity", key: "quantity" },
+  { header: "Category", key: "category" },
+];
+
 
 const Dashboard = () => {
   const { setLoading } = useGlobal();
@@ -208,15 +217,13 @@ const Dashboard = () => {
       />
 
       {products?.length > 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2">
-          {products.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              handleDelete={() => setDeleteModal(product._id)}
-              handleEdit={() => openEditModal(product._id)}
-            />
-          ))}
+        <div className="flex flex-col items-center justify-center gap-2 rounded-lg overflow-hidden border border-gray">
+          <ProductsTable
+            products={products}
+            columns={columns}
+            openEditModal={openEditModal}
+            setDeleteModal={setDeleteModal}
+          />
         </div>
       ) : (
         <div className="h-[70vh] flex flex-col items-center justify-center gap-3 text-center">

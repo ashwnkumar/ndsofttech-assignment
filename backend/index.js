@@ -24,7 +24,7 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(generalLimiter);
+// app.use(generalLimiter);
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);

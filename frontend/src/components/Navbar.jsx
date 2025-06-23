@@ -69,11 +69,13 @@ const Navbar = () => {
             </div>,
             document.getElementById("root")
           )}
-        <Button
-          icon={UserCircle}
-          variant="icon"
-          onClick={() => setOpenProfile(!openProfile)}
-        />
+        <Button variant="icon" onClick={() => setOpenProfile(!openProfile)}>
+          {user ? (
+            <PlaceholderImage name={user?.name} size={32} />
+          ) : (
+            <UserCircle />
+          )}
+        </Button>
       </div>
     </div>
   );

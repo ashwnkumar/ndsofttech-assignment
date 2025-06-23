@@ -10,7 +10,13 @@ const addProduct = async (req, res) => {
       return sendResponse(res, 400, "Please enter all required fields");
     }
 
-    const product = await Product.create({ name, price, quantity, category });
+    // Set author from logged-in user
+    const author = req.user && req.user._id;
+    if (!author) {
+      return sendResponse(res, 401, "Unauthorized: User must be logged in");
+    }
+
+    const product = await Product.create({ name, price, quantity, category, author });
 
     return sendResponse(res, 201, "Product added successfully");
   } catch (error) {
@@ -21,7 +27,13 @@ const addProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    if (!req.user || !req.user._id) {
+      return sendResponse(res, 401, "Unauthorized: Please login to view your products");
+    }
+
+    const products = await Product.find({ author: req.user._id })
+      .populate("author", "username email") 
+      .sort({ createdAt: -1 });
 
     return sendResponse(res, 200, "Products fetched successfully", {
       products,
@@ -35,13 +47,21 @@ const getProducts = async (req, res) => {
 const editProduct = async (req, res) => {
   try {
     const { id } = req.params;
-
     const { name, price, quantity, category } = req.body;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return sendResponse(res, 400, "Invalid product ID");
+    }
 
     const product = await Product.findById(id);
 
     if (!product) {
       return sendResponse(res, 404, "Product not found");
+    }
+
+    // Check if current user is author (authorization)
+    if (!req.user || product.author.toString() !== req.user._id.toString()) {
+      return sendResponse(res, 403, "Unauthorized to edit this product");
     }
 
     if (name) product.name = name;
@@ -62,12 +82,11 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate ObjectId
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return sendResponse(res, 400, "Invalid product ID");
     }
 
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).populate("author", "username email");
 
     if (!product) {
       return sendResponse(res, 404, "Product not found");
@@ -86,7 +105,6 @@ const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate ObjectId
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return sendResponse(res, 400, "Invalid product ID");
     }
@@ -96,6 +114,12 @@ const deleteProduct = async (req, res) => {
     if (!product) {
       return sendResponse(res, 404, "Product not found");
     }
+
+    // Authorization check: only author can delete
+    if (!req.user || product.author.toString() !== req.user._id.toString()) {
+      return sendResponse(res, 403, "Unauthorized to delete this product");
+    }
+
     await product.deleteOne();
 
     return sendResponse(res, 200, "Product deleted successfully");
