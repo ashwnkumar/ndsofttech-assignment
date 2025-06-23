@@ -92,8 +92,7 @@ const Register = () => {
           name: "password",
           required: true,
           type: "password",
-          helper:
-            "Use at least 8 characters, including uppercase, lowercase, a number, and a special symbol.",
+          placeholder: "Password",
           value: formData.password,
           onChange: handleInputChange,
           error: errors.password,

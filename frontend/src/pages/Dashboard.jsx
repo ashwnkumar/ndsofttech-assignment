@@ -61,8 +61,8 @@ const Dashboard = () => {
   const resetForm = () => {
     setFormData({
       name: "",
-      price: 0,
-      quantity: 0,
+      price: "",
+      quantity: "",
       category: "",
     });
     setErrors({});
@@ -152,6 +152,7 @@ const Dashboard = () => {
           label: "Price",
           name: "price",
           type: "number",
+          placeholder: "Price",
           required: true,
           value: formData.price,
           onChange: handleInputChange,
@@ -163,6 +164,7 @@ const Dashboard = () => {
           name: "quantity",
           type: "number",
           required: true,
+          placeholder: "Quantity",
           value: formData.quantity,
           onChange: handleInputChange,
           error: errors.quantity,
