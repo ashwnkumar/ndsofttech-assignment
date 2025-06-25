@@ -34,7 +34,7 @@ export const ProductProvider = ({ children }) => {
       getProducts();
     } catch (error) {
       console.log("Error adding product:", error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export const ProductProvider = ({ children }) => {
       toast.success("Product deleted successfully");
     } catch (error) {
       console.log("Error deleting product:", error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export const ProductProvider = ({ children }) => {
       getProducts();
     } catch (error) {
       console.log("Error updating product:", error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export const ProductProvider = ({ children }) => {
       return product;
     } catch (error) {
       console.log("Error fetching product details:", error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

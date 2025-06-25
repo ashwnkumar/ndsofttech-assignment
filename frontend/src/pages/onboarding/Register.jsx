@@ -50,7 +50,7 @@ const Register = () => {
       navigate("/");
     } catch (error) {
       console.log("Error registering:", error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

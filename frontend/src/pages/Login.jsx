@@ -52,7 +52,7 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.log("Error logging in:", error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ const Login = () => {
         token: firebaseToken,
       });
 
-      const { token, user } = response.data.data; 
+      const { token, user } = response.data.data;
 
       localStorage.setItem("token", token);
       setUser(user);
@@ -78,7 +78,6 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.log("Error logging in with Google:", error);
-      
     }
   };
 
